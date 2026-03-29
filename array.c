@@ -79,7 +79,7 @@ int stack_pop(array *s, char **hostname)
     *hostname = (s->array[s->front % STACK_SIZE]);//get element in front
     (s->array[s->front % STACK_SIZE]) = NULL; //replace pop element with null
     //printf("popping\n");
-    s->front = s->front + 1 % STACK_SIZE; //increment front
+    s->front = (s->front + 1) % STACK_SIZE; //increment front
     s->currentSize-1; //decrement current size
     pthread_mutex_unlock(&(s->mutex)); // unlock after critical section
     sem_post(&(s->emptyEntries));       // we consumed form the buffer so we signal emptyEntrie

@@ -60,7 +60,7 @@ void requester(void *arg)
     line[strcspn(line, "\n")] = '\0';//remove null pointer
     printf("Line is: %s", line);
     stack_push(&DNSArray, line);//push onto qeueu
-    DNSArray->currentSize += 1;//update currentSize
+    
 
   }
   fclose(arg);
@@ -78,7 +78,7 @@ void resolver(void *arg)
   {
     printf(stdout, "Log file opened succesfully");
   }
-  while(activeRequesterCount != 0 && stack_empty(DNSArray))
+  while(activeRequesterCount != 0 && !stack_empty(DNSArray))
   {
     //take element from array: threadsafe
     char ** domainName = NULL;
@@ -91,7 +91,8 @@ void resolver(void *arg)
     if(resolve_ipv4_address(*domainName, ipAdd, ipAddLen) != 0)
     {
       printf(stdout, "failed to get IP add\n");
-      **domainName = "could not resolve IP address"
+      char * domainNameP = "could not resolve IP address";
+      **domainName = &domainNameP;
     }
     //----log to file
     pthread_mutex_lock(logMutex)//lock mutex
@@ -107,9 +108,8 @@ int main(int argc, char *argv[]) {
   //init requester count
   activeRequesterCount = argc - 2;//number of input files is argc - a.exe and log file
   //--------settings
-  int resolverNum;
+  int resolverNum = 2;
 
-  // sample hostname
   if(argc < 3)
   {
     printf(stdin, "invalid number of arguments");
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
   char[] logFileName = argv[1];
   //open file. Overwrite contents and create a new file if it doesnt exist
   FILE *logftr = fopen(logFileName);
-  if(*logftr == NUll)
+  if(logftr == NUll)
   {
     printf(stdout, "File failed to open\n", );
   }
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
   const int requesterNum = argc-2;
   pthread_t requesterThreadsArr = [requesterNum];
   pthread_t resolverThreadsArr = [resolverNum];
-  for(int i = 0; i < argc-2; i++)//loop and initalize the requesters based on number of input files
+  for(int i = 0; i < requesterNum; i++)//loop and initalize the requesters based on number of input files
   {
     char* fileName = argv[i+2]//get file name create thread
     //create requester
