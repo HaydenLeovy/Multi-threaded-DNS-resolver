@@ -1,0 +1,2 @@
+fix main for command line argumnets
+initalize threads assign to file
