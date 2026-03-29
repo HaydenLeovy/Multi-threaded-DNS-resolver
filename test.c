@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "array.h"
 
-int main(int argc, char *argv[]) {
+/*int main(int argc, char *argv[]) {
  
   array testArray;
   array* testArrayP = &testArray;
@@ -59,4 +59,52 @@ int main(int argc, char *argv[]) {
 
 
   return 0;
+}*/
+
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;
+pthread_mutex_t countMutex = PTHREAD_MUTEX_INITIALIZER;
+
+void* threadOneFunc(void* arg)
+{
+    for(int iOne = 0; iOne < 5; iOne++)
+    {
+        pthread_mutex_lock(&countMutex);
+        counter = counter - 1;
+        pthread_mutex_unlock(&countMutex);
+    }
+    return NULL;
 }
+
+void* threadTwoFunc(void* arg)
+{
+    for(int iTwo = 0; iTwo < 5; iTwo++)
+    {
+        pthread_mutex_lock(&countMutex);
+        counter = counter - 1;
+        pthread_mutex_unlock(&countMutex);
+    }
+    return NULL;
+}
+
+int main()
+{
+    counter = 10;
+    pthread_t threadOne;
+    pthread_t threadTwo;
+
+    pthread_create(&threadOne, NULL, threadOneFunc, NULL);
+    pthread_create(&threadTwo, NULL, threadTwoFunc, NULL);
+
+    pthread_join(threadOne, NULL);
+    pthread_join(threadTwo, NULL);
+
+    printf("%i\n", counter);
+
+    pthread_mutex_destroy(&countMutex);
+
+    return 0;
+}
+

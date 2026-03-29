@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <stdatomic.h>
+
 #define STACK_SIZE 8 // max elements in stack
 #define PTHRED once
 typedef struct {

@@ -12,7 +12,7 @@
 //---------------global variable
 array *DNSArray;
 pthread_mutex_t logMutex;
-int poisonCount;
+int activeRequesterCount;
 
 static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_len) {
   struct addrinfo hints;
@@ -59,9 +59,13 @@ void requester(void *arg)
   {
     line[strcspn(line, "\n")] = '\0';//remove null pointer
     printf("Line is: %s", line);
-    //stack_push(&DNSArray, line);
+    stack_push(&DNSArray, line);//push onto qeueu
+    DNSArray->currentSize += 1;//update currentSize
+
   }
   fclose(arg);
+  atomic_fetch_add(&activeRequesterCount, -1) //atomicaly decrement poison pill
+   
 }
 
 void resolver(void *arg)
@@ -74,12 +78,13 @@ void resolver(void *arg)
   {
     printf(stdout, "Log file opened succesfully");
   }
-  while(poisonCount != 0 && )
+  while(activeRequesterCount != 0 && stack_empty(DNSArray))
   {
     //take element from array: threadsafe
     char ** domainName = NULL;
-    (DNSArray, domainName);
-    
+    stack_pop(DNSArray, domainName);
+
+
     //get ip address: threadsafe
     char *ipAdd = NULL;
     size_t ipAddLen = 16;
@@ -99,7 +104,8 @@ int main(int argc, char *argv[]) {
   //init array and mutex
   stack_init(DNSArray);
   pthread_mutex_init(logMutex, 0);
-  poisonCount = argc - 2;
+  //init requester count
+  activeRequesterCount = argc - 2;//number of input files is argc - a.exe and log file
   //--------settings
   int resolverNum;
 
