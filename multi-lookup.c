@@ -2,15 +2,17 @@
 #include "array.h"
 
 
-#include <netdb.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/types.h>
-
 //---------------global variable
 array *DNSArray;
+pthread_mutex_t logMutex;
+int poisonCount;
 
 static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_len) {
   struct addrinfo hints;
@@ -62,11 +64,44 @@ void requester(void *arg)
   fclose(arg);
 }
 
+void resolver(void *arg)
+{
+  //cast back to char
+  (char*) arg;
+  //open
+  FILE * myFile = fopen(arg, "w");
+  if(myFile == NUll)
+  {
+    printf(stdout, "Log file opened succesfully");
+  }
+  while(poisonCount != 0 && )
+  {
+    //take element from array: threadsafe
+    char ** domainName = NULL;
+    (DNSArray, domainName);
+    
+    //get ip address: threadsafe
+    char *ipAdd = NULL;
+    size_t ipAddLen = 16;
+    if(resolve_ipv4_address(*domainName, ipAdd, ipAddLen) != 0)
+    {
+      printf(stdout, "failed to get IP add\n");
+      **domainName = "could not resolve IP address"
+    }
+    //----log to file
+    pthread_mutex_lock(logMutex)//lock mutex
+    fprintf(myFile, "%s, %c", **domainName, *ipAdd);//write to file
+    pthread_mutex_unlock(logMutex); //unlock after writing
+  }
+}
 
 int main(int argc, char *argv[]) {
-  //init array
+  //init array and mutex
   stack_init(DNSArray);
-
+  pthread_mutex_init(logMutex, 0);
+  poisonCount = argc - 2;
+  //--------settings
+  int resolverNum;
 
   // sample hostname
   if(argc < 3)
@@ -82,23 +117,38 @@ int main(int argc, char *argv[]) {
   {
     printf(stdout, "File failed to open\n", );
   }
+
   printf("creating threads\n");
-  const int numThreads = argc-2;
-  pthread_t threadsArr = [numThreads];
+  //create arrays for threads
+  const int requesterNum = argc-2;
+  pthread_t requesterThreadsArr = [requesterNum];
+  pthread_t resolverThreadsArr = [resolverNum];
   for(int i = 0; i < argc-2; i++)//loop and initalize the requesters based on number of input files
   {
     char* fileName = argv[i+2]//get file name create thread
-    int threadStat = pthread_create(&thread[i], NULL, produce, (void)fileName);
-    if(threadStat != 0)
+    //create requester
+    if(pthread_create(&requesterThreadsArr[i], NULL, requester, (void)fileName) != 0)
     {
-      printf(stdout, "thread %i failed\n", i);
+      printf(stdout, "requester thread %i failed\n", i);
     }
     else
     {
-      printf(stdout, "thread %i success\n", i);
+      printf(stdout, "requester thread %i success\n", i);
     }
   }
 
+  for(int i = 0; i < resolverNum; i++)
+  {
+    //create resolver
+    if(pthread_create(&resolverThreadsArr[i], NULL, resolver, (void)logFileName) != 0)
+    {
+      printf(stdout, "resolver thread %i failed\n", i);
+    }
+    else
+    {
+      printf(stdout, "resolver thread %i success\n", i);
+    }
+  }
   /*  
   const char *hostname = "google.com";
   // buffer to store the first IPv4 address returned by getaddrinfo

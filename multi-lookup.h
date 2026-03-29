@@ -1,3 +1,3 @@
 #pragma once
-void requester(voidarg);
-
+void requester(void *arg);
+void resolver(void *arg);
