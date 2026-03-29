@@ -10,11 +10,17 @@ typedef struct {
     sem_t fullEntries; //track full entries
     sem_t emptyEntries; //track empty entries
     pthread_mutex_t mutex; //lock
-    int array[STACK_SIZE]; // storage array for integers
-    int top;               // array index indicating where the top is
+    char* array[STACK_SIZE]; //DNS array 
+    int front;
+    int end;
+    int currentSize;
+    int maxSize;
 } array;
 
 int stack_init(array *s);                 // initialise the array
 int stack_push(array *s, char *hostname);  // place element into the array, block when full
 int stack_pop(array *s, char **hostname); // remove element from the array, block when empty
+bool stack_empty(array *s);
+bool stack_full(array *s);
+void print_arr(array *s);
 void stack_free(array *s);               // free the stack's resources
