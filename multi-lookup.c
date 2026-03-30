@@ -14,6 +14,7 @@ array *DNSArray;
 pthread_mutex_t logMutex;
 pthread_mutex_t fileOpenLock;
 int activeRequesterCount;
+FILE * logFile;
 
 static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_len) {
   struct addrinfo hints;
@@ -91,7 +92,6 @@ void *resolver(void *arg)
   {
     printf("in resolver:file name is %s\n", logFileNameP);
   }
-  //open
   FILE * myFile = fopen(logFileNameP, "w");
   if(myFile != NULL)
   {
@@ -169,12 +169,12 @@ int main(int argc, char *argv[]) {
   pthread_t requesterThreadsArr[requesterNum];
   pthread_t resolverThreadsArr[resolverNum];
   //create a array for file names and fill it. This is because we cant have a filename variablelocal to our loop. Not threadsafe
-  char* inputFiles[argc-2];
+  /*char* inputFiles[argc-2];
   for(int i = 0; i < argc-2; i++)
   {
     inputFiles[i]=NULL; //get rid of garbage
     inputFiles[i]=argv[i+2];//get ith filename;
-  }
+  }*/
   //--------producers
   /*for(int i = 0; i < requesterNum; i++)//loop and initalize the requesters based on number of input files
   {
