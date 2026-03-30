@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 //---------------global variable
-array *DNSArray;
+array DNSArray;
 pthread_mutex_t logMutex;
 pthread_mutex_t fileOpenLock;
 int activeRequesterCount;
@@ -93,12 +93,15 @@ void *resolver(void *arg)
     printf("In resolver log file failed to open\n");
   }
   
-  /*while(activeRequesterCount != 0 && !stack_empty(DNSArray))
+  while(activeRequesterCount != 0 && !stack_empty(&DNSArray)) //fix this wha tif we have 0 resolvers but list is not empty
   {
+    printf("begining to loop in resolver\n");
     //take element from array: threadsafe
-    char ** domainName = NULL;
-    stack_pop(DNSArray, domainName);
-
+    char * domain = NULL;
+    char ** domainName = &domain;
+    printf("checking DNSArray access in resolver: %i\n", DNSArray.maxSize);
+    stack_pop(&DNSArray, domainName);
+    printf("pop succesful\n");
 
     //get ip address: threadsafe
     char *ipAdd = NULL;
@@ -111,20 +114,20 @@ void *resolver(void *arg)
     }
     //----log to file
     pthread_mutex_lock(&logMutex);//lock mutex
-    fprintf(myFile, "%i, %c", **domainName, *ipAdd);//write to file
+    fprintf(logFile, "%i, %c", **domainName, *ipAdd);//write to file
     pthread_mutex_unlock(&logMutex); //unlock after writing
-  }*/
+  }
  
   printf("resolver function has finished\n");
   return NULL;
 }
 
+
 int main(int argc, char *argv[]) {
-  array DNSArrayOne;
-  DNSArray = &DNSArrayOne;
+
   printf("entering main\n");
   //init array and mutex
-  stack_init(DNSArray);
+  stack_init(&DNSArray);
   printf("stack inited\n");
   pthread_mutex_init(&logMutex, 0);
   pthread_mutex_init(&fileOpenLock, 0);
@@ -133,6 +136,25 @@ int main(int argc, char *argv[]) {
   //init log file
   char *logFileName = argv[1];
   logFile = fopen(logFileName, "w");
+  //fill array
+  char * domOne = "facebook.com";
+  char * domTwo = "yahoo.com";
+  char * domThree = "wikipedia.org"; 
+  char * hostname = NULL;
+  char ** doubleHost = &hostname;
+  stack_push(&DNSArray, domOne);
+  stack_push(&DNSArray, domTwo);
+  stack_push(&DNSArray, domThree);
+  print_arr(&DNSArray);
+  if(stack_empty(&DNSArray))
+  {
+    printf("stack is empty\n");
+  }
+  else
+  {
+    printf("stack not empty\n");
+  }
+  print_arr(&DNSArray);
   //--------settings
   int resolverNum = 1;
 
@@ -196,7 +218,7 @@ int main(int argc, char *argv[]) {
   {
     
     //create resolver
-    if(pthread_create(&resolverThreadsArr[i], NULL, resolver, (void *)logFileName) != 0)
+    if(pthread_create(&resolverThreadsArr[i], NULL, resolver, NULL) != 0)
     {
       printf("resolver thread %i failed\n", i);
     }
@@ -215,7 +237,7 @@ int main(int argc, char *argv[]) {
     printf("%s -> %s\n", hostname, ipv4);
   } else {
     printf("%s -> NOT_RESOLVED\n", hostname);
-  }
-  fclose(logftr);
-  return 0; */
+  }*/
+  fclose(logFile);
+  return 0; 
 }

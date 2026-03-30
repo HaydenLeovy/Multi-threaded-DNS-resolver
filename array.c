@@ -52,11 +52,11 @@ int stack_init(array *s)
 // place element on the top of the stack
 int stack_push(array *s, char *hostname)
 {
-    // printf("pushing\n");
+    printf("pushing\n");
     sem_wait(&(s->emptyEntries)); // block when there are 0 empty entries and we are full. Each push decrements empty entries
-    // printf("past wait\n");
+    printf("past wait\n");
     pthread_mutex_lock(&(s->mutex)); // lock for critical section
-    //printf("push gained lock\n");
+    printf("push gained lock\n");
     // printf("in critical\n");
     //printf("pushing\n");
     s->array[s->end % STACK_SIZE] = hostname; //insert hostname at end. Mod keeps this within queue bounds
@@ -64,7 +64,7 @@ int stack_push(array *s, char *hostname)
     //printf("pushing %c at pos %i i is %i\n", *hostname, s->end % STACK_SIZE, s->end);
     s->end = (s->end+1) % STACK_SIZE;//increment end   
     pthread_mutex_unlock(&(s->mutex)); // unlock after critical section
-    //printf("push released lock\n");
+    printf("push released lock\n");
     sem_post(&(s->fullEntries));        // we have added to buffer so we signal full entries
     
     return 0;
@@ -73,17 +73,21 @@ int stack_push(array *s, char *hostname)
 // remove element from the top of the stack
 int stack_pop(array *s, char **hostname)
 {
-    //printf("about to wait on pop\n");
+    printf("about to wait on pop\n");
     sem_wait(&(s->fullEntries)); // block when there are 0 full entries. Nothing to consume
-    //printf("past wait for pp\n");
+    printf("past wait for pp\n");
     pthread_mutex_lock(&(s->mutex)); // lock for critical section
-    //printf("front: %i\n", s->front % STACK_SIZE);
+    printf("mutex locked\n");
+    printf("front: %i front element is: %s\n", s->front % STACK_SIZE, s->array[s->front % STACK_SIZE]);
     *hostname = (s->array[s->front % STACK_SIZE]);//get element in front
+    printf("hostname grabbed succesfully");
     (s->array[s->front % STACK_SIZE]) = NULL; //replace pop element with null
-    //printf("popping\n");
-    s->front = (s->front + 1) % STACK_SIZE; //increment front
-    s->currentSize-1; //decrement current size
+    printf("popping\n");
+    //s->front = (s->front + 1) % STACK_SIZE; //increment front
+    //s->currentSize-1; //decrement current size
+    printf("about to unlock mutex\n");
     pthread_mutex_unlock(&(s->mutex)); // unlock after critical section
+    printf("releasing lock\n");
     sem_post(&(s->emptyEntries));       // we consumed form the buffer so we signal emptyEntrie
     return 0;
 }
@@ -105,13 +109,15 @@ bool stack_full(array *s)
     return false;
 }
 
+
+
 void print_arr(array * s)
 {
     for(int i = 0; i < STACK_SIZE; i++)
     {
         if(s->array[i] != NULL)
         {
-            printf("%c\n", *(s->array[i]));
+            printf("%s\n", s->array[i]);
         }
         else
         {
