@@ -79,27 +79,18 @@ void *requester(void *arg)
 
 void *resolver(void *arg)
 {
-  void *voidP = NULL;
+  
   printf("in resolver\n");
-  //cast back to char
-  char *logFileNameP = (char*) arg;
+  
   printf("trying to open log file from resolver func\n");
-  if(logFileNameP == NULL)
+  
+  if(logFile != NULL)
   {
-    printf("in resolver file name null\n");
-  }
-  if(logFileNameP != NULL)
-  {
-    printf("in resolver:file name is %s\n", logFileNameP);
-  }
-  FILE * myFile = fopen(logFileNameP, "w");
-  if(myFile != NULL)
-  {
-    printf("Log file opened succesfully\n");
+    printf("In resolver Log file opened succesfully\n");
   }
   else
   {
-    printf("log file failed to open\n");
+    printf("In resolver log file failed to open\n");
   }
   
   /*while(activeRequesterCount != 0 && !stack_empty(DNSArray))
@@ -123,9 +114,9 @@ void *resolver(void *arg)
     fprintf(myFile, "%i, %c", **domainName, *ipAdd);//write to file
     pthread_mutex_unlock(&logMutex); //unlock after writing
   }*/
- fclose(myFile);
+ 
   printf("resolver function has finished\n");
- return voidP;
+  return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -139,6 +130,9 @@ int main(int argc, char *argv[]) {
   pthread_mutex_init(&fileOpenLock, 0);
   //init requester count
   activeRequesterCount = argc - 2;//number of input files is argc - a.exe and log file
+  //init log file
+  char *logFileName = argv[1];
+  logFile = fopen(logFileName, "w");
   //--------settings
   int resolverNum = 1;
 
@@ -152,7 +146,7 @@ int main(int argc, char *argv[]) {
     printf("correct amount of requirements\n");
   }
   
-  char *logFileName = argv[1];
+  
   if (logFileName == NULL) {
     printf("argv[1] is NULL!\n");
   } 
