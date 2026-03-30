@@ -12,6 +12,7 @@
 //---------------global variable
 array *DNSArray;
 pthread_mutex_t logMutex;
+pthread_mutex_t fileOpenLock;
 int activeRequesterCount;
 
 static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_len) {
@@ -131,6 +132,7 @@ int main(int argc, char *argv[]) {
   stack_init(DNSArray);
   printf("stack inited\n");
   pthread_mutex_init(&logMutex, 0);
+  pthread_mutex_init(&fileOpenLock, 0);
   //init requester count
   activeRequesterCount = argc - 2;//number of input files is argc - a.exe and log file
   //--------settings
@@ -154,12 +156,8 @@ int main(int argc, char *argv[]) {
   {
     printf("argv file name is: %s\n", logFileName);
   }
-  //open file. Overwrite contents and create a new file if it doesnt exist
-  FILE *logftr = fopen(logFileName, "r");
-  if(logftr == NULL)
-  {
-    printf("File failed to open\n");
-  }
+  
+  
 
   printf("creating threads\n");
   //create arrays for threads
@@ -191,6 +189,7 @@ int main(int argc, char *argv[]) {
   printf("trying to init resolver threads\n");
   for(int i = 0; i < resolverNum; i++)
   {
+    
     //create resolver
     if(pthread_create(&resolverThreadsArr[i], NULL, resolver, (void *)logFileName) != 0)
     {
