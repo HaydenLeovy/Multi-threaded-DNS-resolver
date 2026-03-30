@@ -22,18 +22,18 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
   struct addrinfo *current = NULL;
   int status = 0;
 
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
+  memset(&hints, 0, sizeof(hints)); //fill hints with size of hints 0s
+  hints.ai_family = AF_INET; //address family
+  hints.ai_socktype = SOCK_STREAM; //socket type
 
-  status = getaddrinfo(hostname, NULL, &hints, &results);
+  status = getaddrinfo(hostname, NULL, &hints, &results); //getaddrinfo returns a ip address for hostname
   if (status != 0) {
     return -1;
   }
 
-  for (current = results; current != NULL; current = current->ai_next) {
-    struct sockaddr_in *address = (struct sockaddr_in *) current->ai_addr;
-    if (inet_ntop(AF_INET, &(address->sin_addr), ipv4, ipv4_len) != NULL) {
+  for (current = results; current != NULL; current = current->ai_next) { //loop through ip objects in result
+    struct sockaddr_in *address = (struct sockaddr_in *) current->ai_addr; //get socket address and make address point to it
+    if (inet_ntop(AF_INET, &(address->sin_addr), ipv4, ipv4_len) != NULL) { //put address in ipv4
       freeaddrinfo(results);
       return 0;
     }
@@ -93,7 +93,7 @@ void *resolver(void *arg)
     printf("In resolver log file failed to open\n");
   }
   
-  while(activeRequesterCount != 0 && !stack_empty(&DNSArray)) //fix this wha tif we have 0 resolvers but list is not empty
+  while(activeRequesterCount != 0 && !stack_empty(&DNSArray)) //fix this what if we have 0 resolvers but list is not empty
   {
     printf("begining to loop in resolver\n");
     //take element from array: threadsafe
@@ -104,18 +104,33 @@ void *resolver(void *arg)
     printf("pop succesful\n");
 
     //get ip address: threadsafe
-    char *ipAdd = NULL;
-    size_t ipAddLen = 16;
+    size_t ipAddLen = 17;
+    char *ipAdd = (char *)malloc(ipAddLen);
+    printf("IP add initalized\n");
+    
     if(resolve_ipv4_address(*domainName, ipAdd, ipAddLen) != 0)
     {
       printf("failed to get IP add\n");
       char * domainNameP = "could not resolve IP address";
       domainName = &domainNameP;
     }
+    else
+    {
+      printf("IP address grabbed\n");
+  
+    }
     //----log to file
+    printf("locking log mutex\n");
     pthread_mutex_lock(&logMutex);//lock mutex
-    fprintf(logFile, "%i, %c", **domainName, *ipAdd);//write to file
+    printf("logging\n");
+    if(logFile != NULL)
+    {
+      printf("log file open\n");
+    }
+    fprintf(logFile, "%s, %s", *domainName, ipAdd);//write to file
+    printf("log succesful\n");
     pthread_mutex_unlock(&logMutex); //unlock after writing
+    printf("log mutex unlocked\n");
   }
  
   printf("resolver function has finished\n");
@@ -138,13 +153,13 @@ int main(int argc, char *argv[]) {
   logFile = fopen(logFileName, "w");
   //fill array
   char * domOne = "facebook.com";
-  char * domTwo = "yahoo.com";
-  char * domThree = "wikipedia.org"; 
-  char * hostname = NULL;
-  char ** doubleHost = &hostname;
+  //char * domTwo = "yahoo.com";
+  //char * domThree = "wikipedia.org"; 
+  //char * hostname = NULL;
+  //char ** doubleHost = &hostname;
   stack_push(&DNSArray, domOne);
-  stack_push(&DNSArray, domTwo);
-  stack_push(&DNSArray, domThree);
+  //stack_push(&DNSArray, domTwo);
+  //stack_push(&DNSArray, domThree);
   print_arr(&DNSArray);
   if(stack_empty(&DNSArray))
   {
