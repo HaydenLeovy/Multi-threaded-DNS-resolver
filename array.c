@@ -75,7 +75,7 @@ int stack_pop(array *s, char **hostname)
 {
     printf("about to wait on pop\n");
     sem_wait(&(s->fullEntries)); // block when there are 0 full entries. Nothing to consume
-    printf("past wait for pp\n");
+    printf("past wait for pop\n"); //crash here
     pthread_mutex_lock(&(s->mutex)); // lock for critical section
     printf("mutex locked\n");
     printf("front: %i front element is: %s\n", s->front % STACK_SIZE, s->array[s->front % STACK_SIZE]);

@@ -64,7 +64,7 @@ void *requester(void *arg)
   /*
   while(fgets(line, 100, myFile))
   {
-    line[strcspn(line, "\n")] = '\0';//remove null pointer
+    
     printf("Line is: %s", line);
     stack_push(DNSArray, line);//push onto qeueu
     
@@ -104,10 +104,16 @@ void *resolver(void *arg)
     printf("pop succesful\n");
 
     //get ip address: threadsafe
-    size_t ipAddLen = 17;
-    char *ipAdd = (char *)malloc(ipAddLen);
+    size_t ipAddLen = 16;
+
+    char ipAdd[ipAddLen]; //crash here
     printf("IP add initalized\n");
-    
+    //check whether domain address is null
+    if(domain == NULL)
+    {
+      printf("failed to get valid domain name");
+      continue; //go to next whil iteration
+    }
     if(resolve_ipv4_address(*domainName, ipAdd, ipAddLen) != 0)
     {
       printf("failed to get IP add\n");
@@ -199,13 +205,6 @@ int main(int argc, char *argv[]) {
   const int requesterNum = argc-2;
   pthread_t requesterThreadsArr[requesterNum];
   pthread_t resolverThreadsArr[resolverNum];
-  //create a array for file names and fill it. This is because we cant have a filename variablelocal to our loop. Not threadsafe
-  /*char* inputFiles[argc-2];
-  for(int i = 0; i < argc-2; i++)
-  {
-    inputFiles[i]=NULL; //get rid of garbage
-    inputFiles[i]=argv[i+2];//get ith filename;
-  }*/
   //--------producers
   /*for(int i = 0; i < requesterNum; i++)//loop and initalize the requesters based on number of input files
   {
