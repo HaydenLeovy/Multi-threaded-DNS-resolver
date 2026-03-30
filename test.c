@@ -63,7 +63,7 @@
 
 #include <stdio.h>
 #include <pthread.h>
-
+array *DNSarray;
 int counter = 0;
 pthread_mutex_t countMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -91,6 +91,10 @@ void* threadTwoFunc(void* arg)
 
 int main()
 {
+    DNSarray = NULL;
+    stack_init(DNSarray);
+    printf("afterinit\n");
+    
     counter = 10;
     pthread_t threadOne;
     pthread_t threadTwo;

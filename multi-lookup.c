@@ -43,19 +43,23 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
 
 void *requester(void *arg)
 {
+  printf("In requester thread\n");
   void *returnP = NULL;
   //cast back to char
   (char*) arg;
   //open
+  printf("trying to open file\n");
   FILE * myFile = fopen(arg, "r");
   if(myFile == NULL) //check that we opened succesfully
   {
-    fprintf(stderr, "File failed to open\n");
+    printf("File failed to open\n");
     return returnP;
   }
+  printf("Past file opening\n");
   //we will read into this
   char line[100] = "";
   //read from file
+  /*
   while(fgets(line, 100, myFile))
   {
     line[strcspn(line, "\n")] = '\0';//remove null pointer
@@ -66,21 +70,37 @@ void *requester(void *arg)
   }
   fclose(arg);
   atomic_fetch_add(&activeRequesterCount, -1); //atomicaly decrement poison pill
+  */
   
   return returnP;
 }
 
 void *resolver(void *arg)
 {
+  printf("in resolver\n");
   //cast back to char
-  (char*) arg;
-  //open
-  FILE * myFile = fopen(arg, "w");
-  if(myFile == NULL)
+  char *logFileNameP = (char*) arg;
+  printf("trying to open log file\n");
+  if(logFileNameP == NULL)
   {
-    printf("Log file opened succesfully");
+    printf("file name null\n");
   }
-  while(activeRequesterCount != 0 && !stack_empty(DNSArray))
+  if(logFileNameP != NULL)
+  {
+    printf("file name is null\n");
+  }
+  //open
+  FILE * myFile = fopen(logFileNameP, "w");
+  if(myFile != NULL)
+  {
+    printf("Log file opened succesfully\n");
+  }
+  else
+  {
+    printf("log file failed to open\n");
+  }
+  
+  /*while(activeRequesterCount != 0 && !stack_empty(DNSArray))
   {
     //take element from array: threadsafe
     char ** domainName = NULL;
@@ -100,12 +120,16 @@ void *resolver(void *arg)
     pthread_mutex_lock(&logMutex);//lock mutex
     fprintf(myFile, "%i, %c", **domainName, *ipAdd);//write to file
     pthread_mutex_unlock(&logMutex); //unlock after writing
-  }
+  }*/
 }
 
 int main(int argc, char *argv[]) {
+  array DNSArrayOne;
+  DNSArray = &DNSArrayOne;
+  printf("entering main\n");
   //init array and mutex
   stack_init(DNSArray);
+  printf("stack inited\n");
   pthread_mutex_init(&logMutex, 0);
   //init requester count
   activeRequesterCount = argc - 2;//number of input files is argc - a.exe and log file
@@ -117,8 +141,19 @@ int main(int argc, char *argv[]) {
     printf("invalid number of arguments");
     return 0;
   }
+  else
+  {
+    printf("correct amount of requirements\n");
+  }
   
   char *logFileName = argv[1];
+  if (logFileName == NULL) {
+    printf("argv[1] is NULL!\n");
+  } 
+  else 
+  {
+    printf("argv file name is: %s\n", logFileName);
+  }
   //open file. Overwrite contents and create a new file if it doesnt exist
   FILE *logftr = fopen(logFileName, "r");
   if(logftr == NULL)
@@ -131,7 +166,15 @@ int main(int argc, char *argv[]) {
   const int requesterNum = argc-2;
   pthread_t requesterThreadsArr[requesterNum];
   pthread_t resolverThreadsArr[resolverNum];
-  for(int i = 0; i < requesterNum; i++)//loop and initalize the requesters based on number of input files
+  //create a array for file names and fill it. This is because we cant have a filename variablelocal to our loop. Not threadsafe
+  char* inputFiles[argc-2];
+  for(int i = 0; i < argc-2; i++)
+  {
+    inputFiles[i]=NULL; //get rid of garbage
+    inputFiles[i]=argv[i+2];//get ith filename;
+  }
+  //--------producers
+  /*for(int i = 0; i < requesterNum; i++)//loop and initalize the requesters based on number of input files
   {
     char* fileName = argv[i+2];//get file name create thread
     //create requester
@@ -143,8 +186,9 @@ int main(int argc, char *argv[]) {
     {
       printf("requester thread %i success\n", i);
     }
-  }
-
+  }*/
+  //--------consumers
+  printf("trying to init resolver threads\n");
   for(int i = 0; i < resolverNum; i++)
   {
     //create resolver

@@ -10,7 +10,8 @@
 // initialise the stack
 int stack_init(array *s)
 {
-    //printf("initing stack\n");
+    printf("initing stack\n");
+    printf("initing mutexes\n");
     //initalize semaphores
     int semFullState = 1;
     int semEmptyState = 1;
@@ -31,13 +32,14 @@ int stack_init(array *s)
     {
         printf("mutex broke\n");
     }
-    
+    printf("initing vars\n");
     //initialize stack vars
     s->front = 0;
     s->end = 0;
     s->currentSize = 0;
     s->maxSize = STACK_SIZE;
 
+    printf("making array null\n");
     //make all inital pointers null
     for(int i = 0; i < STACK_SIZE; i++)
     {
