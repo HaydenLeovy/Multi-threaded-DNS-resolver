@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 
 // initialise the stack
 int stack_init(array *s)
@@ -81,6 +83,7 @@ int stack_pop(array *s, char **hostname)
     printf("front: %i front element is: %s\n", s->front % STACK_SIZE, s->array[s->front % STACK_SIZE]);
     *hostname = (s->array[s->front % STACK_SIZE]);//get element in front
     printf("hostname grabbed succesfully\n");
+    free(s->array[s->front % STACK_SIZE]);//before we null this entry we need to free the meemory because it was allocated with malloc
     (s->array[s->front % STACK_SIZE]) = NULL; //replace pop element with null
     printf("popping\n");
     s->front = (s->front + 1) % STACK_SIZE; //increment front
@@ -132,5 +135,5 @@ void stack_free(array *s) {
     sem_destroy(&s->fullEntries);
     sem_destroy(&s->emptyEntries);
     pthread_mutex_destroy(&s->mutex);
-    free(s);
+    
 }

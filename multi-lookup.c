@@ -66,11 +66,20 @@ void *requester(void *arg)
     }
     
     //--------read from file into buffer
-    char* buffer = NULL; //this is the buffer we will read into
+    char* buffer = NULL; //this is the buffer we will read into. We need to malloc a new buffer because if we dont we will assign the same pointer to eveyr index in array
     printf("aboiut to read\n");
-    while(getline(&buffer, &maxRead, myInputFile) != -1)//loop read until end of file. getline wnats a char ** which is why we do &buffer
+    
+    while(1)//loop read until end of file. getline wnats a char ** which is why we do &buffer
     {
+      buffer = malloc(maxRead);
+      //getline
+      if(getline(&buffer, &maxRead, myInputFile) == -1)
+      {
+        break;
+      }
       printf("reading from %s: %s", fileName, buffer);
+      //push onto DNS array
+      stack_push(&DNSArray, buffer);
     }
     //printf("exited requester\n");
     return NULL;
@@ -147,12 +156,12 @@ int main(int argc, char *argv[])
     }
     // fill array
     printf("printing array\n");
-    stack_push(&DNSArray, "host 1");
+    /*stack_push(&DNSArray, "host 1");
     stack_push(&DNSArray, "facebook");
     stack_push(&DNSArray, "host 3");
     stack_push(&DNSArray, "google");
     stack_push(&DNSArray, "host 5");
-    stack_push(&DNSArray, "safari");
+    stack_push(&DNSArray, "safari");*/
     print_arr(&DNSArray);
     //--------settings
     int const resolverNum = 0;
@@ -222,8 +231,8 @@ int main(int argc, char *argv[])
         pthread_join(resolverThreadsArr[i], NULL);
     }
     
-
+    print_arr(&DNSArray);
     printf("reached bottom of main\n");
-
+    stack_free(&DNSArray);
     return 0;
 }
