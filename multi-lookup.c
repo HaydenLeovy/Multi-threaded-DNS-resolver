@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <pthread.h>
 //---------------global variable
 array DNSArray;
 pthread_mutex_t logMutex;
@@ -178,6 +179,7 @@ int main(int argc, char *argv[]) {
   print_arr(&DNSArray);
   //--------settings
   int resolverNum = 1;
+  activeRequesterCount = 0;
 
   if(argc < 3)
   {
