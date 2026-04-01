@@ -37,7 +37,7 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
     for (current = results; current != NULL; current = current->ai_next)
     {                                                                         // loop through ip objects in result
         struct sockaddr_in *address = (struct sockaddr_in *)current->ai_addr; // get socket address and make address point to it
-        if (inet_ntop(AF_INET, &(address->sin_addr), ipv4, ipv4_len) != NULL)
+        if (inet_ntop(AF_INET, &(address->sin_addr), ipv4, ipv4_len) != NULL) //convert address to int and store in ipv4
         { // put address in ipv4
             freeaddrinfo(results);
             return 0;
@@ -64,12 +64,33 @@ void *resolver(void *arg)
     }
     while(activeRequesterCount != 0|| !stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
     {
+        //-----------get domain from DNSarray
         //pop a element from stack
         char * domainName = NULL;
         char ** domainNameP = &domainName;
         stack_pop(&DNSArray, domainNameP);
         printf("domain name is: %s\n", *domainNameP);
-        fwrite(*domainNameP, sizeof(char), strlen(*domainNameP), logFile);
+        //----------get ip address
+        //create a buffer for the ip address
+        const size_t ipAddLen = 16;//this is constant
+        char ipv4[ipAddLen];
+        //make sure domain is not null
+        if(*domainNameP == NULL)
+        {
+            printf("domain is null\n");
+            return NULL;
+        }
+        //resolve address
+        if(resolve_ipv4_address(*domainNameP, ipv4, ipAddLen) != 0)//failed to get ip address
+        {
+            strcpy(ipv4, "Domain no found");
+            printf("%s Ip address not found\n", *domainNameP);
+        }
+        else
+        {
+            printf("IP add: %s\n", ipv4);
+        }
+        //fwrite(*domainNameP, sizeof(char), strlen(*domainNameP), logFile);
     }
     printf("resolver has exited succesfully\n");
     return NULL;
@@ -101,7 +122,7 @@ int main(int argc, char *argv[])
     }
     // fill array
     printf("printing array\n");
-    stack_push(&DNSArray, "host 1");
+    stack_push(&DNSArray, "google");
     stack_push(&DNSArray, "host 2");
     stack_push(&DNSArray, "host 3");
     print_arr(&DNSArray);

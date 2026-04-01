@@ -80,7 +80,7 @@ int stack_pop(array *s, char **hostname)
     printf("mutex locked\n");
     printf("front: %i front element is: %s\n", s->front % STACK_SIZE, s->array[s->front % STACK_SIZE]);
     *hostname = (s->array[s->front % STACK_SIZE]);//get element in front
-    printf("hostname grabbed succesfully");
+    printf("hostname grabbed succesfully\n");
     (s->array[s->front % STACK_SIZE]) = NULL; //replace pop element with null
     printf("popping\n");
     s->front = (s->front + 1) % STACK_SIZE; //increment front
