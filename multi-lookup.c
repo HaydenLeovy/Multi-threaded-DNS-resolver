@@ -50,8 +50,19 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
 
 void *requester(void *arg)
 {
+    char * fileName = (char*) arg;
     printf("In requester thread\n");
-    printf("file name: %s\n", (char*) arg);
+    
+    FILE *myInputFile = fopen(fileName, "r");
+    if(myInputFile == NULL)
+    {
+      printf("input file null\n");
+      return NULL;
+    }
+    else
+    {
+      printf("%s opened succesfully\n", fileName);
+    }
     printf("exited requester\n");
     return NULL;
 }
