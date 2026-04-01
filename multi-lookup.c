@@ -51,7 +51,9 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
 void *requester(void *arg)
 {
     printf("In requester thread\n");
+    //printf("file name: %s\n", (char*) arg);
     printf("exited requester\n");
+    return NULL;
 }
 
 void *resolver(void *arg)
@@ -132,7 +134,7 @@ int main(int argc, char *argv[])
     stack_push(&DNSArray, "safari");
     print_arr(&DNSArray);
     //--------settings
-    int const resolverNum = 2;
+    int const resolverNum = 0;
 
     if (argc < 3)
     {
@@ -158,8 +160,23 @@ int main(int argc, char *argv[])
     const int requesterNum = argc - 2;
     pthread_t requesterThreadsArr[requesterNum];
     pthread_t resolverThreadsArr[resolverNum];
+    //---------producers/requesters
+    printf("trying to prints requester threads\n");
+    for (int i = 0; i < requesterNum; i++)
+    {
+        // create requester
+        if (pthread_create(&requesterThreadsArr[i], NULL, requester, NULL) != 0)
+        {
+            printf("resolver thread %i failed\n", i);
+        }
+        else
+        {
+            printf("resolver thread %i success\n", i);
+        }
+    }
 
-    //--------consumers
+
+    //--------consumers/resolvers
     printf("trying to init resolver threads\n");
     for (int i = 0; i < resolverNum; i++)
     {
@@ -174,10 +191,16 @@ int main(int argc, char *argv[])
             printf("resolver thread %i success\n", i);
         }
     }
+    //join threads so main waits for them to complete 
+    for(int i = 0; i < requesterNum; i++)
+    {
+        pthread_join(requesterThreadsArr[i], NULL);
+    }
     for (int i = 0; i < resolverNum; i++)
     {
         pthread_join(resolverThreadsArr[i], NULL);
     }
+    
 
     printf("reached bottom of main\n");
 
