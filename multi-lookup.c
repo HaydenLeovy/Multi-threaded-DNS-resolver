@@ -77,10 +77,15 @@ void *requester(void *arg)
       {
         break;
       }
+      if(buffer == NULL);
+      {
+        continue;
+      }
       printf("reading from %s: %s", fileName, buffer);
       //push onto DNS array
       stack_push(&DNSArray, buffer);
     }
+    //int oldVal = __atomic_fetch_add(&activeRequesterCount, -1, __ATOMIC_SEQ_CST);//decrement active requesters
     //printf("exited requester\n");
     return NULL;
 }
@@ -164,7 +169,7 @@ int main(int argc, char *argv[])
     stack_push(&DNSArray, "safari");*/
     print_arr(&DNSArray);
     //--------settings
-    int const resolverNum = 0;
+    int const resolverNum = 2;
 
     if (argc < 3)
     {
@@ -184,7 +189,7 @@ int main(int argc, char *argv[])
     {
         printf("argv file name is: %s\n", logFileName);
     }
-    activeRequesterCount = 0;
+  
     printf("creating threads\n");
     // create arrays for threads
     const int requesterNum = argc - 2;
