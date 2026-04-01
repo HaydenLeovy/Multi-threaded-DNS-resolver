@@ -83,8 +83,8 @@ int stack_pop(array *s, char **hostname)
     printf("hostname grabbed succesfully");
     (s->array[s->front % STACK_SIZE]) = NULL; //replace pop element with null
     printf("popping\n");
-    //s->front = (s->front + 1) % STACK_SIZE; //increment front
-    //s->currentSize-1; //decrement current size
+    s->front = (s->front + 1) % STACK_SIZE; //increment front
+    s->currentSize-1; //decrement current size
     printf("about to unlock mutex\n");
     pthread_mutex_unlock(&(s->mutex)); // unlock after critical section
     printf("releasing lock\n");

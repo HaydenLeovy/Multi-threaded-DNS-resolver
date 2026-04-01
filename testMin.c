@@ -61,13 +61,16 @@ void *resolver(void *arg)
     if(logFile != NULL)
     {
         printf("log file not null for resolver. Attempting write\n");
-        char *testWrite = "this is a test";
-        
-        fwrite(testWrite, sizeof(testWrite), 14, logFile);
-        
     }
-    printf("trying to open log file from resolver func\n");
-
+    while(activeRequesterCount != 0|| !stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
+    {
+        //pop a element from stack
+        char * domainName = NULL;
+        char ** domainNameP = &domainName;
+        stack_pop(&DNSArray, domainNameP);
+        printf("domain name is: %s\n", *domainNameP);
+        fwrite(*domainNameP, sizeof(char), strlen(*domainNameP), logFile);
+    }
     printf("resolver has exited succesfully\n");
     return NULL;
 }
@@ -97,7 +100,11 @@ int main(int argc, char *argv[])
         printf("logFile not null\n");
     }
     // fill array
-
+    printf("printing array\n");
+    stack_push(&DNSArray, "host 1");
+    stack_push(&DNSArray, "host 2");
+    stack_push(&DNSArray, "host 3");
+    print_arr(&DNSArray);
     //--------settings
     int const resolverNum = 1;
 
