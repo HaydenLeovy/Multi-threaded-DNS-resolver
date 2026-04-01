@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
   } 
   else 
   {
-    printf(" about to loop argv file name is: %s\n", logFileName);
+    //printf(" about to loop argv file name is: %s\n", logFileName);
   }
   for(int i = 0; i < resolverNum; i++)
   {
@@ -252,6 +252,6 @@ int main(int argc, char *argv[]) {
   } else {
     printf("%s -> NOT_RESOLVED\n", hostname);
   }*/
-  fclose(logFile);
+  //fclose(logFile);
   return 0; 
 }
