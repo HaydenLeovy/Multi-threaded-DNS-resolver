@@ -58,7 +58,14 @@ void *resolver(void *arg)
 {
 
     printf("in resolver\n");
-
+    if(logFile != NULL)
+    {
+        printf("log file not null for resolver. Attempting write\n");
+        char *testWrite = "this is a test";
+        
+        fwrite(testWrite, sizeof(testWrite), 14, logFile);
+        
+    }
     printf("trying to open log file from resolver func\n");
 
     printf("resolver has exited succesfully\n");
@@ -87,7 +94,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("logFile not null");
+        printf("logFile not null\n");
     }
     // fill array
 
