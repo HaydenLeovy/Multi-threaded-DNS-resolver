@@ -51,7 +51,7 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
 void *requester(void *arg)
 {
     printf("In requester thread\n");
-    //printf("file name: %s\n", (char*) arg);
+    printf("file name: %s\n", (char*) arg);
     printf("exited requester\n");
     return NULL;
 }
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < requesterNum; i++)
     {
         // create requester
-        if (pthread_create(&requesterThreadsArr[i], NULL, requester, NULL) != 0)
+        if (pthread_create(&requesterThreadsArr[i], NULL, requester, (void *) argv[i+2]) != 0)
         {
             printf("resolver thread %i failed\n", i);
         }
