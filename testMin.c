@@ -60,7 +60,7 @@ void *resolver(void *arg)
     printf("in resolver\n");
     if(logFile != NULL)
     {
-        printf("log file not null for resolver. Attempting write\n");
+        printf("log file not null for resolver\n");
     }
     while(activeRequesterCount != 0|| !stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
     {
@@ -90,7 +90,9 @@ void *resolver(void *arg)
         {
             printf("IP add: %s\n", ipv4);
         }
-        //fwrite(*domainNameP, sizeof(char), strlen(*domainNameP), logFile);
+        int bytesWritten = fprintf(logFile, "%s, %s", *domainNameP, ipv4);
+        fflush(stdout);
+        printf("%i\n", bytesWritten);
     }
     printf("resolver has exited succesfully\n");
     return NULL;
@@ -123,8 +125,11 @@ int main(int argc, char *argv[])
     // fill array
     printf("printing array\n");
     stack_push(&DNSArray, "google");
-    stack_push(&DNSArray, "host 2");
+    stack_push(&DNSArray, "facebook");
     stack_push(&DNSArray, "host 3");
+    stack_push(&DNSArray, "host 4");
+    stack_push(&DNSArray, "host 5");
+    stack_push(&DNSArray, "safari");
     print_arr(&DNSArray);
     //--------settings
     int const resolverNum = 1;
@@ -147,7 +152,7 @@ int main(int argc, char *argv[])
     {
         printf("argv file name is: %s\n", logFileName);
     }
-
+    activeRequesterCount = 0;
     printf("creating threads\n");
     // create arrays for threads
     const int requesterNum = argc - 2;

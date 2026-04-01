@@ -1,2 +1,3 @@
 prints going to file bug
 pop on null
+resolver goes to sleep when array empties and there is no requester
