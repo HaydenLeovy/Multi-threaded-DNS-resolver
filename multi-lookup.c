@@ -16,6 +16,7 @@ pthread_mutex_t logMutex;
 pthread_mutex_t fileOpenLock;
 int activeRequesterCount;
 FILE *logFile;
+size_t maxRead;
 
 static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_len)
 {
@@ -51,8 +52,8 @@ static int resolve_ipv4_address(const char *hostname, char *ipv4, size_t ipv4_le
 void *requester(void *arg)
 {
     char * fileName = (char*) arg;
-    printf("In requester thread\n");
-    
+    //printf("In requester thread\n");
+    //-----open file
     FILE *myInputFile = fopen(fileName, "r");
     if(myInputFile == NULL)
     {
@@ -63,14 +64,22 @@ void *requester(void *arg)
     {
       printf("%s opened succesfully\n", fileName);
     }
-    printf("exited requester\n");
+    
+    //--------read from file into buffer
+    char* buffer = NULL; //this is the buffer we will read into
+    printf("aboiut to read\n");
+    while(getline(&buffer, &maxRead, myInputFile) != -1)//loop read until end of file. getline wnats a char ** which is why we do &buffer
+    {
+      printf("reading from %s: %s", fileName, buffer);
+    }
+    //printf("exited requester\n");
     return NULL;
 }
 
 void *resolver(void *arg)
 {
 
-    printf("in resolver\n");
+    //printf("in resolver\n");
     if(logFile != NULL)
     {
         printf("log file not null for resolver\n");
@@ -107,7 +116,7 @@ void *resolver(void *arg)
         fflush(logFile);
         printf("%i\n", bytesWritten);
     }
-    printf("resolver has exited succesfully\n");
+    //printf("resolver has exited succesfully\n");
     return NULL;
 }
 
@@ -123,9 +132,10 @@ int main(int argc, char *argv[])
     pthread_mutex_init(&fileOpenLock, 0);
     // init requester count
     activeRequesterCount = argc - 2; // number of input files is argc - a.exe and log file
+    // init read max
+    maxRead = 30;
     // init log file
     char *logFileName = argv[1];
-
     logFile = fopen(argv[1], "w");
     if (logFile == NULL)
     {
