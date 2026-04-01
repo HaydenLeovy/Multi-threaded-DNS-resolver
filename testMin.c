@@ -90,8 +90,8 @@ void *resolver(void *arg)
         {
             printf("IP add: %s\n", ipv4);
         }
-        int bytesWritten = fprintf(logFile, "%s, %s", *domainNameP, ipv4);
-        fflush(stdout);
+        int bytesWritten = fprintf(logFile, "%s, %s\n", *domainNameP, ipv4);
+        fflush(logFile);
         printf("%i\n", bytesWritten);
     }
     printf("resolver has exited succesfully\n");
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     stack_push(&DNSArray, "safari");
     print_arr(&DNSArray);
     //--------settings
-    int const resolverNum = 1;
+    int const resolverNum = 2;
 
     if (argc < 3)
     {
