@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 //---------------global variable
 array DNSArray;
@@ -83,7 +84,7 @@ void *requester(void *arg)
       stack_push(&DNSArray, hostname);
     }
     //printf("exited requester\n");
-
+    atomic_fetch_add(&activeRequesterCount, -1); //do this atomically because decremnets are not atomic
     return NULL;
 }
 
