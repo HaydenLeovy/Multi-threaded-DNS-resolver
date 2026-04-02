@@ -113,6 +113,8 @@ void *resolver(void *arg)
             printf("domain is null\n");
             return NULL;
         }
+        // strip newline
+        domainName[strcspn(domainName, "\n")] = '\0';
         //resolve address
         if(resolve_ipv4_address(*domainNameP, ipv4, ipAddLen) != 0)//failed to get ip address
         {
