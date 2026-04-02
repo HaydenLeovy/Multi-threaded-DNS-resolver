@@ -1,6 +1,5 @@
 #include "array.h"
 // your thread-safe array implementation here
-#include "array.h"
 #include <stdlib.h>
 #include <semaphore.h>
 #include <stdbool.h>

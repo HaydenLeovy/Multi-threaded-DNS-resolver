@@ -66,27 +66,24 @@ void *requester(void *arg)
     }
     
     //--------read from file into buffer
-    char* buffer = NULL; //this is the buffer we will read into. We need to malloc a new buffer because if we dont we will assign the same pointer to eveyr index in array
+    char buffer[256]; //this is the buffer we will read into. We need to malloc a new buffer because if we dont we will assign the same pointer to eveyr index in array
     printf("aboiut to read\n");
     
-    while(1)//loop read until end of file. getline wnats a char ** which is why we do &buffer
+    while(fgets(buffer, sizeof(buffer), myInputFile))//loop read until end of file. getline wnats a char ** which is why we do &buffer
     {
-      buffer = malloc(maxRead);
-      //getline
-      if(getline(&buffer, &maxRead, myInputFile) == -1)
+      char * hostname = strdup(buffer);
+      if(!hostname)
       {
-        break;
-      }
-      if(buffer == NULL);
-      {
+        printf("memory allocation failed\n");
         continue;
       }
+      
       printf("reading from %s: %s", fileName, buffer);
       //push onto DNS array
-      stack_push(&DNSArray, buffer);
+      stack_push(&DNSArray, hostname);
     }
-    //int oldVal = __atomic_fetch_add(&activeRequesterCount, -1, __ATOMIC_SEQ_CST);//decrement active requesters
     //printf("exited requester\n");
+
     return NULL;
 }
 
@@ -189,7 +186,7 @@ int main(int argc, char *argv[])
     {
         printf("argv file name is: %s\n", logFileName);
     }
-  
+    activeRequesterCount = 2;
     printf("creating threads\n");
     // create arrays for threads
     const int requesterNum = argc - 2;
