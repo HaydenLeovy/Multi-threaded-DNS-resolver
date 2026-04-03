@@ -89,8 +89,10 @@ void *requester(void *arg)
     atomic_fetch_add(&activeRequesterCount, -1); //do this atomically because decremnets are not atomic
     if(activeRequesterCount == 0)
     {
-        char *poison = strdup("PI");
-        stack_push(&DNSArray, poison);
+        char *poisonOne = strdup("PI");
+        stack_push(&DNSArray, poisonOne);
+        char *poisonTwo = strdup("PI");
+        stack_push(&DNSArray, poisonTwo);
     }
     return NULL;
 }
@@ -120,9 +122,6 @@ void *resolver(void *arg)
         }
         if(strcmp(*domainNameP, "PI") == 0)//poison pill in array
         {
-            //poison pill is consumed by thread that pops it so we add another into the array to kill other threads
-            char *poison = strdup("PI");
-            stack_push(&DNSArray, poison);
             free(*domainNameP);
             return NULL;
         }
@@ -146,7 +145,7 @@ void *resolver(void *arg)
         int bytesWritten = fprintf(logFile, "%s, %s\n", *domainNameP, ipv4);
         //we can now free the domainName pointer
         free(*domainNameP);
-        fflush(logFile);
+       
         printf("%i\n", bytesWritten);
     }
     //printf("resolver has exited succesfully\n");
