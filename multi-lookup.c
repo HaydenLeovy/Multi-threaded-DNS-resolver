@@ -15,7 +15,7 @@
 array DNSArray;
 pthread_mutex_t logMutex;
 pthread_mutex_t fileOpenLock;
-int activeRequesterCount;
+atomic_int activeRequesterCount;
 FILE *logFile;
 size_t maxRead;
 
@@ -104,7 +104,7 @@ void *resolver(void *arg)
         printf("log file not null for resolver\n");
     }
     
-    while(!stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
+    while(1)//whilwe there are still requester erequesting or array is not empty loop
     {
         printf("requesters: %i\n", activeRequesterCount);
         //-----------get domain from DNSarray
@@ -120,10 +120,10 @@ void *resolver(void *arg)
         }
         if(strcmp(*domainNameP, "PI") == 0)//poison pill in array
         {
-            free(*domainNameP);
             //poison pill is consumed by thread that pops it so we add another into the array to kill other threads
             char *poison = strdup("PI");
             stack_push(&DNSArray, poison);
+            free(*domainNameP);
             return NULL;
         }
         printf("domain name is: %s\n", *domainNameP);
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
     {
         printf("argv file name is: %s\n", logFileName);
     }
-   
+    activeRequesterCount = 2;
     printf("creating threads\n");
     // create arrays for threads
     const int requesterNum = argc - 2;
