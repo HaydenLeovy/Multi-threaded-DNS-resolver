@@ -97,10 +97,12 @@ int stack_pop(array *s, char **hostname)
 
 bool stack_empty(array *s)
 {
+    pthread_mutex_lock(&(s->mutex));
     if(s->currentSize == 0)//if current size = 0 return true else return false
     {
         return true;
     }
+    pthread_mutex_unlock(&(s->mutex));
     return false;
 }
 bool stack_full(array *s)

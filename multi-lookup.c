@@ -82,9 +82,16 @@ void *requester(void *arg)
       printf("reading from %s: %s", fileName, buffer);
       //push onto DNS array
       stack_push(&DNSArray, hostname);
+     
+    
     }
     //printf("exited requester\n");
     atomic_fetch_add(&activeRequesterCount, -1); //do this atomically because decremnets are not atomic
+    if(activeRequesterCount == 0)
+    {
+        char *poison = strdup("PI");
+        stack_push(&DNSArray, poison);
+    }
     return NULL;
 }
 
@@ -96,24 +103,34 @@ void *resolver(void *arg)
     {
         printf("log file not null for resolver\n");
     }
-    while(activeRequesterCount != 0|| !stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
+    
+    while(!stack_empty(&DNSArray))//whilwe there are still requester erequesting or array is not empty loop
     {
+        printf("requesters: %i\n", activeRequesterCount);
         //-----------get domain from DNSarray
         //pop a element from stack
         char * domainName = NULL;
         char ** domainNameP = &domainName;
         stack_pop(&DNSArray, domainNameP);
+        //make sure domain is not null
+        if(*domainNameP == NULL)
+        {
+            printf("domain is null\n");
+            continue;
+        }
+        if(strcmp(*domainNameP, "PI") == 0)//poison pill in array
+        {
+            free(*domainNameP);
+            //poison pill is consumed by thread that pops it so we add another into the array to kill other threads
+            char *poison = strdup("PI");
+            stack_push(&DNSArray, poison);
+            return NULL;
+        }
         printf("domain name is: %s\n", *domainNameP);
         //----------get ip address
         //create a buffer for the ip address
         const size_t ipAddLen = 16;//this is constant
         char ipv4[ipAddLen];
-        //make sure domain is not null
-        if(*domainNameP == NULL)
-        {
-            printf("domain is null\n");
-            return NULL;
-        }
         // strip newline
         domainName[strcspn(domainName, "\n")] = '\0';
         //resolve address
@@ -127,6 +144,8 @@ void *resolver(void *arg)
             printf("IP add: %s\n", ipv4);
         }
         int bytesWritten = fprintf(logFile, "%s, %s\n", *domainNameP, ipv4);
+        //we can now free the domainName pointer
+        free(*domainNameP);
         fflush(logFile);
         printf("%i\n", bytesWritten);
     }
@@ -189,7 +208,7 @@ int main(int argc, char *argv[])
     {
         printf("argv file name is: %s\n", logFileName);
     }
-    activeRequesterCount = 2;
+   
     printf("creating threads\n");
     // create arrays for threads
     const int requesterNum = argc - 2;
