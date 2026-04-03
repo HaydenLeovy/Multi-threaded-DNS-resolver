@@ -143,7 +143,8 @@ void *resolver(void *arg)
             printf("IP add: %s\n", ipv4);
         }
         int bytesWritten = fprintf(logFile, "%s, %s\n", *domainNameP, ipv4);
-        //we can now free the domainName pointer
+        fflush(logFile);
+	//we can now free the domainName pointer
         free(*domainNameP);
        
         printf("%i\n", bytesWritten);
@@ -154,7 +155,8 @@ void *resolver(void *arg)
 
 int main(int argc, char *argv[])
 {
-
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     
     printf("entering main\n");
     // init array and mutex
@@ -253,6 +255,10 @@ int main(int argc, char *argv[])
     {
         pthread_join(resolverThreadsArr[i], NULL);
     }
+
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    printf("./multi-lookup: total time is %.6f seconds\n", elapsed);
     
     print_arr(&DNSArray);
     printf("reached bottom of main\n");
